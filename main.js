@@ -1,3 +1,5 @@
+prediction_1 = "";
+prediction_2 = "";
 Webcam.set({
     width: 350,
     height: 300,
@@ -7,10 +9,61 @@ Webcam.set({
 camera = document.getElementById("camera");
 Webcam.attach('#camera');
 
-function takesnapshot() 
-{
-    Webcam.snap(function(data_uri) {
-        document.getElementById("result").innerHTML = '<img id="captured_image" src="'+data_uri+'"/>';
+function takesnapshot() {
+    Webcam.snap(function (data_uri) {
+        document.getElementById("result").innerHTML = '<img id="captured_image" src="' + data_uri + '"/>';
     });
 }
 console.log('ml5 version:', ml5.version);
+
+classifier = ml5.imageClassifier('https://teachablemachine.withgoogle.com/models/Mz16UDQsb/model.json', modelLoaded);
+
+function modelLoaded() {
+    console.log('Model Loaded');
+}
+
+function speak() {
+    var synth = window.speechSynthesis;
+    var speakdata1 = "The First Prediction Is: " + prediction_1;
+    var speakdata2 = "The Second Prediction Is: " + prediction_2;
+    utter_this = new SpeechSynthesisUtterance(speakdata1 + speakdata2);
+    synth.speak(utter_this);
+}
+
+function check() {
+    img = document.getElementById("captured_image");
+    classifier.classify(img, gotResult);
+}
+
+function gotResult(error, results) {
+    if (error) {
+        console.error(error);
+    } else {
+        console.log(results);
+        document.getElementById("result_emotion_name").innerHTML = results[0].label;
+        document.getElementById("result_emotion_name2").innerHTML = results[1].label;
+        prediction_1 = results[0].label;
+        prediction_2 = results[1].label;
+        speak();
+        if (results[0].label == "pointing") {
+            document.getElementById("update_emoji").innerHTML = "&#9757;";
+        }
+        if (results[0].label == "snapping") {
+            document.getElementById("update_emoji").innerHTML = "&#128076;";
+        }
+
+        if (results[0].label == "clapping") {
+            document.getElementById("update_emoji").innerHTML = "&#128079;";
+        }
+        if (results[1].label == "pointing") {
+            document.getElementById("update_emoji2").innerHTML = "&#9757;";
+        }
+        if (results[1].label == "snapping") {
+            document.getElementById("update_emoji2").innerHTML = "&#128076;";
+        }
+
+        if (results[1].label == "clapping") {
+            document.getElementById("update_emoji2").innerHTML = "&#128079;";
+        }
+    }
+}
